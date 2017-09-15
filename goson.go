@@ -12,12 +12,12 @@ import (
  */
 
 type JsonObject struct {
-    parsed      map[string]interface{}
+    dataMap map[string]interface{}
 }
 
 
 func (j *JsonObject) Parse(data []byte)    {
-    json.Unmarshal(data, &j.parsed)
+    json.Unmarshal(data, &j.dataMap)
 }
 
 func (j *JsonObject) GetJsonArray(path string) []JsonObject    {
@@ -32,7 +32,7 @@ func (j *JsonObject) GetJsonArray(path string) []JsonObject    {
     for _, value := range values   {
         mapValue, ok := value.(map[string]interface{})
         if ok   {
-            jo := JsonObject{parsed: mapValue}
+            jo := JsonObject{dataMap: mapValue}
             arrJson = append(arrJson, jo)
         }
     }
@@ -43,7 +43,7 @@ func (j *JsonObject) GetJsonObject(path string) *JsonObject    {
 
     v, ok := obj.(map[string]interface{})
     if ok   {
-        jo := JsonObject{ parsed: v }
+        jo := JsonObject{ dataMap: v }
         return &jo
     }
     return nil
@@ -67,28 +67,47 @@ func (j *JsonObject) GetInt(path string) (int, error) {
         return 0, errors.New(`unable to get ` + path + `, is not int`)
     }
 }
-func (j *JsonObject) GetString(path string) (string, error) {
+func (j *JsonObject) GetString(path string) *string {
     obj := j.get(path)
 
     switch obj.(type) {
     case string:
         str, _ := obj.(string)
-        return str, nil
+        return &str
     case float64:
         float, _ := obj.(float64)
         str := strconv.FormatFloat(float, 'f', -1, 64)
-        return str, nil
+        return &str
     default:
-        return ``, errors.New(`unable to get ` + path + `, is not string`)
+        return nil
     }
+}
 
+func (j *JsonObject) Put(path string, value interface{})   {
+    splittedPath := strings.Split(path, `.`)
+    if j.dataMap == nil  {
+        j.dataMap = make(map[string]interface{})
+    }
+    jsonMap := j.dataMap
+
+    for index, pathItem := range splittedPath   {
+        if index < len(splittedPath) - 1    {
+            jo := make(map[string]interface{})
+            jsonMap[pathItem] = jo
+            jsonMap = jo
+
+        } else {
+            jsonMap[pathItem] = value
+        }
+    }
+    j.dataMap = jsonMap
 }
 
 func (j *JsonObject) get(path string) interface{} {
     splittedPath := strings.Split(path, `.`)
 
     var jsonMap interface{}
-    jsonMap = j.parsed
+    jsonMap = j.dataMap
     var val interface{}
     for _, pathItem := range splittedPath   {
         if jsonMap == nil   {
@@ -104,4 +123,10 @@ func (j *JsonObject) get(path string) interface{} {
         }
     }
     return val
+}
+
+func ParseJson(data []byte) *JsonObject    {
+    jo := JsonObject{}
+    jo.Parse(data)
+    return &jo
 }

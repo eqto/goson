@@ -90,6 +90,11 @@ func (j *JsonObject) GetString(path string) *string {
 func (j *JsonObject) Put(path string, value interface{}) error   {
     splittedPath := strings.Split(path, `.`)
 
+    _, ok := value.(JsonObject)
+    if ok   {
+        value = value.(JsonObject).dataMap
+    }
+
     if j.dataMap == nil  {
         j.dataMap = make(map[string]interface{})
     }
@@ -108,6 +113,10 @@ func (j *JsonObject) Put(path string, value interface{}) error   {
                 return errors.New(pathItem + `is not a json object`)
             }
         } else {
+            curr, ok := currentMap[pathItem]
+            if ok  {
+                value = []interface{}{curr, value}
+            }
             currentMap[pathItem] = value
         }
     }

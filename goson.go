@@ -16,13 +16,6 @@ type JsonObject struct {
 }
 
 func (j *JsonObject) ToString() *string {
-    //buffer := ``
-    //for key, value := range j.dataMap   {
-    //    switch value.(type) {
-    //    case string:
-    //
-    //    }
-    //}
     data, e := json.Marshal(j.dataMap)
     if e != nil {
         return nil

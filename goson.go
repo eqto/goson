@@ -16,10 +16,6 @@ type JsonObject struct {
 }
 
 
-func (j *JsonObject) Parse(data []byte)    {
-    json.Unmarshal(data, &j.dataMap)
-}
-
 func (j *JsonObject) GetJsonArray(path string) []JsonObject    {
     obj := j.get(path)
 
@@ -125,8 +121,8 @@ func (j *JsonObject) get(path string) interface{} {
     return val
 }
 
-func ParseJson(data []byte) *JsonObject    {
+func Parse(data []byte) *JsonObject    {
     jo := JsonObject{}
-    jo.Parse(data)
+    json.Unmarshal(data, &jo.dataMap)
     return &jo
 }

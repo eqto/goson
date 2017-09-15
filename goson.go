@@ -15,6 +15,21 @@ type JsonObject struct {
     dataMap map[string]interface{}
 }
 
+func (j *JsonObject) ToString() *string {
+    //buffer := ``
+    //for key, value := range j.dataMap   {
+    //    switch value.(type) {
+    //    case string:
+    //
+    //    }
+    //}
+    data, e := json.Marshal(j.dataMap)
+    if e != nil {
+        return nil
+    }
+    str := string(data)
+    return &str
+}
 
 func (j *JsonObject) GetJsonArray(path string) []JsonObject    {
     obj := j.get(path)
@@ -79,24 +94,32 @@ func (j *JsonObject) GetString(path string) *string {
     }
 }
 
-func (j *JsonObject) Put(path string, value interface{})   {
+func (j *JsonObject) Put(path string, value interface{}) error   {
     splittedPath := strings.Split(path, `.`)
+
     if j.dataMap == nil  {
         j.dataMap = make(map[string]interface{})
     }
-    jsonMap := j.dataMap
+
+    rootMap := j.dataMap
+    currentMap := rootMap
 
     for index, pathItem := range splittedPath   {
         if index < len(splittedPath) - 1    {
-            jo := make(map[string]interface{})
-            jsonMap[pathItem] = jo
-            jsonMap = jo
-
+            _, ok := currentMap[pathItem]
+            if !ok   {
+                currentMap[pathItem] = make(map[string]interface{})
+            }
+            currentMap, ok = currentMap[pathItem].(map[string]interface{})
+            if !ok  {
+                return errors.New(pathItem + `is not a json object`)
+            }
         } else {
-            jsonMap[pathItem] = value
+            currentMap[pathItem] = value
         }
     }
-    j.dataMap = jsonMap
+    j.dataMap = rootMap
+    return nil
 }
 
 func (j *JsonObject) get(path string) interface{} {

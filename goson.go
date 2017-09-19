@@ -5,6 +5,7 @@ import (
     "strings"
     "errors"
     "strconv"
+    "go/types"
 )
 
 /**
@@ -15,12 +16,22 @@ type JsonObject struct {
     dataMap map[string]interface{}
 }
 
-func (j *JsonObject) ToString() *string {
+func (j *JsonObject) ToBytes() []byte {
     data, e := json.Marshal(j.dataMap)
     if e != nil {
         return nil
     }
-    str := string(data)
+    return data
+}
+
+func (j *JsonObject) ToString() *string {
+    data := j.ToBytes()
+    str := ``
+    if data != nil  {
+        str = string(data)
+    } else {
+        return nil
+    }
     return &str
 }
 
@@ -53,24 +64,35 @@ func (j *JsonObject) GetJsonObject(path string) *JsonObject    {
     return nil
 }
 
-func (j *JsonObject) GetInt(path string) (int, error) {
+func (j *JsonObject) GetInt(path string) *int {
     obj := j.get(path)
 
     switch obj.(type) {
     case float64:
         float, _ := obj.(float64)
-        return int(float), nil
+        val := int(float)
+        return &val
     case string:
         str, _ := obj.(string)
-        i, e := strconv.Atoi(str)
+        val, e := strconv.Atoi(str)
         if e != nil {
-            return 0, e
+            return nil
         }
-        return i, nil
+        return &val
     default:
-        return 0, errors.New(`unable to get ` + path + `, is not int`)
+        return nil
     }
 }
+func (j *JsonObject) GetBoolean(path string) *bool {
+    obj := j.get(path)
+    b, ok := obj.(bool)
+    if ok   {
+        return &b
+    } else {
+        return nil
+    }
+}
+
 func (j *JsonObject) GetString(path string) *string {
     obj := j.get(path)
 
@@ -87,10 +109,29 @@ func (j *JsonObject) GetString(path string) *string {
     }
 }
 
-func (j *JsonObject) Put(path string, value interface{}) error   {
-    splittedPath := strings.Split(path, `.`)
+func (j *JsonObject) Put(path string, value interface{}) *JsonObject    {
+    j.PutE(path, value)
+    return j
+}
+func (j *JsonObject) PutE(path string, value interface{}) error   {
+    ptr, ok := value.(types.Pointer)
+    if ok   {
+        value = ptr.Elem()
+    }
 
-    _, ok := value.(JsonObject)
+    arrays, ok := value.([]JsonObject)
+    if ok   {
+        arrayMap := []map[string]interface{}{}
+        for _, jo := range arrays {
+            arrayMap = append(arrayMap, jo.dataMap)
+        }
+        value = arrayMap
+    }
+    _, ok = value.(*JsonObject)
+    if ok   {
+        value = value.(*JsonObject).dataMap
+    }
+    _, ok = value.(JsonObject)
     if ok   {
         value = value.(JsonObject).dataMap
     }
@@ -102,6 +143,7 @@ func (j *JsonObject) Put(path string, value interface{}) error   {
     rootMap := j.dataMap
     currentMap := rootMap
 
+    splittedPath := strings.Split(path, `.`)
     for index, pathItem := range splittedPath   {
         if index < len(splittedPath) - 1    {
             _, ok := currentMap[pathItem]
@@ -113,10 +155,6 @@ func (j *JsonObject) Put(path string, value interface{}) error   {
                 return errors.New(pathItem + `is not a json object`)
             }
         } else {
-            curr, ok := currentMap[pathItem]
-            if ok  {
-                value = []interface{}{curr, value}
-            }
             currentMap[pathItem] = value
         }
     }

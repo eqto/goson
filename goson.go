@@ -35,6 +35,10 @@ func (j *JsonObject) ToString() *string {
     return &str
 }
 
+func (j *JsonObject) GetDataMap() map[string]interface{}   {
+    return j.dataMap
+}
+
 func (j *JsonObject) GetJsonArray(path string) []JsonObject    {
     obj := j.get(path)
 
@@ -62,6 +66,25 @@ func (j *JsonObject) GetJsonObject(path string) *JsonObject    {
         return &jo
     }
     return nil
+}
+
+func (j *JsonObject) GetFloat(path string) *float64 {
+    obj := j.get(path)
+
+    switch obj.(type) {
+    case float64:
+        float, _ := obj.(float64)
+        return &float
+    case string:
+        str, _ := obj.(string)
+        val, e := strconv.ParseFloat(str, 64)
+        if e != nil {
+            return nil
+        }
+        return &val
+    default:
+        return nil
+    }
 }
 
 func (j *JsonObject) GetInt(path string) *int {

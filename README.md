@@ -8,6 +8,8 @@ Goson created to ease json parsing and building without hasle using struct.
 ```
 go get -u github.com/firabliz/goson
 
+```
+
 # Example
 
 ```go

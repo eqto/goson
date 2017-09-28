@@ -16,6 +16,14 @@ type JsonObject struct {
     dataMap map[string]interface{}
 }
 
+func (j *JsonObject) ToFormattedBytes() []byte {
+    data, e := json.MarshalIndent(j.dataMap, ``, `  `)
+    if e != nil {
+        return nil
+    }
+    return data
+}
+
 func (j *JsonObject) ToBytes() []byte {
     data, e := json.Marshal(j.dataMap)
     if e != nil {
@@ -133,10 +141,10 @@ func (j *JsonObject) GetString(path string) *string {
 }
 
 func (j *JsonObject) Put(path string, value interface{}) *JsonObject    {
-    j.PutE(path, value)
+    j.putE(path, value)
     return j
 }
-func (j *JsonObject) PutE(path string, value interface{}) error   {
+func (j *JsonObject) putE(path string, value interface{}) error   {
     ptr, ok := value.(types.Pointer)
     if ok   {
         value = ptr.Elem()

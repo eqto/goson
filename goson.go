@@ -25,6 +25,9 @@ func (j *JsonObject) ToFormattedBytes() []byte {
 }
 
 func (j *JsonObject) ToBytes() []byte {
+    if len(j.dataMap) == 0  {
+        return []byte(`{}`)
+    }
     data, e := json.Marshal(j.dataMap)
     if e != nil {
         return nil
@@ -217,6 +220,10 @@ func (j *JsonObject) get(path string) interface{} {
 
 func Parse(data []byte) *JsonObject    {
     jo := JsonObject{}
-    json.Unmarshal(data, &jo.dataMap)
-    return &jo
+    e := json.Unmarshal(data, &jo.dataMap)
+    if e != nil {
+        return nil
+    } else {
+        return &jo
+    }
 }

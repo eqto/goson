@@ -78,3 +78,22 @@ fmt.println(json.GetString(`key`))         //print: string_value
 ```
 
 
+### 4. GetJsonArray
+
+Returns the array value to which the specified name is mapped.
+
+**Returns :**
+
+array value
+
+**How to use**
+
+```go
+//parsing json
+json   := goson.Parse(jsonVal)
+
+var arrJson []JsonObject
+arrJson = json.GetJsonArray(`key`)
+
+```
+

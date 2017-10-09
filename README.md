@@ -97,3 +97,24 @@ arrJson = json.GetJsonArray(`key`)
 
 ```
 
+### 5. GetJsonObject
+
+Returns the object value to which the specified name is mapped.
+
+**Returns :**
+
+object value
+
+**How to use**
+
+```go
+//parsing json
+json   := goson.Parse(jsonVal)
+
+var obj JsonObject
+obj = json.GetJsonObject(`key`)
+
+```
+
+
+

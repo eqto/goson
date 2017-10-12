@@ -140,6 +140,13 @@ func (j *JsonObject) GetString(path string) *string {
     }
 }
 
+func (j *JsonObject) PutArray(path string, json JsonObject) *JsonObject    {
+    array := j.GetJsonArray(path)
+    array = append(array, json)
+    j.Put(path, array)
+    return j
+}
+
 func (j *JsonObject) Put(path string, value interface{}) *JsonObject    {
     j.putE(path, value)
     return j

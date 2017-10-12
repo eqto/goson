@@ -200,6 +200,9 @@ func (j *JsonObject) get(path string) interface{} {
     splittedPath := strings.Split(path, `.`)
 
     var jsonMap interface{}
+    if j == nil {
+        return nil
+    }
     jsonMap = j.dataMap
     var val interface{}
     for _, pathItem := range splittedPath   {

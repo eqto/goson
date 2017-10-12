@@ -53,18 +53,15 @@ func (j *JsonObject) GetDataMap() map[string]interface{}   {
 func (j *JsonObject) GetJsonArray(path string) []JsonObject    {
     obj := j.get(path)
 
-    values, ok := obj.([]interface{})
+    values, ok := obj.([]map[string]interface{})
 
     if !ok  {
         return nil
     }
     var arrJson []JsonObject
     for _, value := range values   {
-        mapValue, ok := value.(map[string]interface{})
-        if ok   {
-            jo := JsonObject{dataMap: mapValue}
-            arrJson = append(arrJson, jo)
-        }
+        jo := JsonObject{dataMap: value}
+        arrJson = append(arrJson, jo)
     }
     return arrJson
 }
@@ -153,21 +150,16 @@ func (j *JsonObject) putE(path string, value interface{}) error   {
         value = ptr.Elem()
     }
 
-    arrays, ok := value.([]JsonObject)
-    if ok   {
+    if arrays, ok := value.([]JsonObject); ok {
         arrayMap := []map[string]interface{}{}
         for _, jo := range arrays {
             arrayMap = append(arrayMap, jo.dataMap)
         }
         value = arrayMap
-    }
-    _, ok = value.(*JsonObject)
-    if ok   {
-        value = value.(*JsonObject).dataMap
-    }
-    _, ok = value.(JsonObject)
-    if ok   {
-        value = value.(JsonObject).dataMap
+    } else if ptrJ, ok := value.(*JsonObject); ok {
+        value = ptrJ.dataMap
+    } else if j, ok := value.(JsonObject); ok {
+        value = j.dataMap
     }
 
     if j.dataMap == nil  {

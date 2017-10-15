@@ -157,7 +157,13 @@ func (j *JsonObject) putE(path string, value interface{}) error   {
         value = ptr.Elem()
     }
 
-    if arrays, ok := value.([]JsonObject); ok {
+    if arrays, ok := value.([]*JsonObject); ok {
+        arrayMap := []map[string]interface{}{}
+        for _, jo := range arrays {
+            arrayMap = append(arrayMap, jo.dataMap)
+        }
+        value = arrayMap
+    } else if arrays, ok := value.([]JsonObject); ok {
         arrayMap := []map[string]interface{}{}
         for _, jo := range arrays {
             arrayMap = append(arrayMap, jo.dataMap)

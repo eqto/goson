@@ -53,14 +53,14 @@ func (j *JsonObject) GetDataMap() map[string]interface{}   {
 func (j *JsonObject) GetJsonArray(path string) []JsonObject    {
     obj := j.get(path)
 
-    values, ok := obj.([]map[string]interface{})
+    values, ok := obj.([]interface{})
 
     if !ok  {
         return nil
     }
     var arrJson []JsonObject
     for _, value := range values   {
-        jo := JsonObject{dataMap: value}
+        jo := JsonObject{dataMap: value.(map[string]interface{})}
         arrJson = append(arrJson, jo)
     }
     return arrJson
@@ -204,10 +204,10 @@ func (j *JsonObject) putE(path string, value interface{}) error   {
 func (j *JsonObject) get(path string) interface{} {
     splittedPath := strings.Split(path, `.`)
 
-    var jsonMap interface{}
     if j == nil {
         return nil
     }
+    var jsonMap interface{}
     jsonMap = j.dataMap
     var val interface{}
     for _, pathItem := range splittedPath   {
@@ -219,6 +219,8 @@ func (j *JsonObject) get(path string) interface{} {
         switch val.(type) {
         case map[string]interface{}:
             jsonMap = val
+        case []interface{}:
+            return val
         default:
             jsonMap = nil
         }

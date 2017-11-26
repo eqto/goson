@@ -94,6 +94,14 @@ func (j *JsonObject) GetFloat(path string) *float64 {
         return nil
     }
 }
+func (j *JsonObject) GetFloatD(path string, defValue float64) float64 {
+    val := j.GetFloat(path)
+    if val == nil   {
+        return defValue
+    } else {
+        return *val
+    }
+}
 
 func (j *JsonObject) GetInt(path string) *int {
     obj := j.get(path)
@@ -114,6 +122,15 @@ func (j *JsonObject) GetInt(path string) *int {
         return nil
     }
 }
+func (j *JsonObject) GetIntD(path string, defValue int) int {
+    val := j.GetInt(path)
+    if val == nil   {
+        return defValue
+    } else {
+        return *val
+    }
+}
+
 func (j *JsonObject) GetBoolean(path string) *bool {
     obj := j.get(path)
     b, ok := obj.(bool)
@@ -121,6 +138,14 @@ func (j *JsonObject) GetBoolean(path string) *bool {
         return &b
     } else {
         return nil
+    }
+}
+func (j *JsonObject) GetBooleanD(path string, defValue bool) bool {
+    val := j.GetBoolean(path)
+    if val == nil   {
+        return defValue
+    } else {
+        return *val
     }
 }
 
@@ -139,12 +164,13 @@ func (j *JsonObject) GetString(path string) *string {
         return nil
     }
 }
-
-func (j *JsonObject) PutArray(path string, json JsonObject) *JsonObject    {
-    array := j.GetJsonArray(path)
-    array = append(array, json)
-    j.Put(path, array)
-    return j
+func (j *JsonObject) GetStringD(path string, defValue string) string {
+    val := j.GetString(path)
+    if val == nil   {
+        return ``
+    } else {
+        return *val
+    }
 }
 
 func (j *JsonObject) Put(path string, value interface{}) *JsonObject    {

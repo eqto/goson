@@ -35,19 +35,24 @@ func (j *JsonObject) ToBytes() []byte {
     return data
 }
 
-func (j *JsonObject) ToString() *string {
+func (j *JsonObject) ToString() string {
     data := j.ToBytes()
-    str := ``
+    str := `{}`
     if data != nil  {
         str = string(data)
-    } else {
-        return nil
     }
-    return &str
+    return str
 }
 
 func (j *JsonObject) GetDataMap() map[string]interface{}   {
     return j.dataMap
+}
+
+func (j *JsonObject) GetInterface(path string) interface{}	{
+	if obj := j.get(path); obj != nil	{
+		return obj
+	}
+	return nil
 }
 
 func (j *JsonObject) GetJsonArray(path string) []JsonObject    {
@@ -177,29 +182,33 @@ func (j *JsonObject) Put(path string, value interface{}) *JsonObject    {
     j.putE(path, value)
     return j
 }
-func (j *JsonObject) putE(path string, value interface{}) error   {
-    ptr, ok := value.(types.Pointer)
-    if ok   {
-        value = ptr.Elem()
-    }
 
-    if arrays, ok := value.([]*JsonObject); ok {
-        arrayMap := []map[string]interface{}{}
-        for _, jo := range arrays {
-            arrayMap = append(arrayMap, jo.dataMap)
-        }
-        value = arrayMap
-    } else if arrays, ok := value.([]JsonObject); ok {
-        arrayMap := []map[string]interface{}{}
-        for _, jo := range arrays {
-            arrayMap = append(arrayMap, jo.dataMap)
-        }
-        value = arrayMap
-    } else if ptrJ, ok := value.(*JsonObject); ok {
-        value = ptrJ.dataMap
-    } else if j, ok := value.(JsonObject); ok {
-        value = j.dataMap
-    }
+func convertValue(value interface{}) interface{}	{
+	//if pointer get the value
+    if ptr, ok := value.(types.Pointer); ok	{
+        value = ptr.Elem()
+	}
+	if arr, ok := value.([]JsonObject); ok	{
+        arrayMap := []interface{}{}
+        for _, jo := range arr {
+            arrayMap = append(arrayMap, convertValue(jo.dataMap))
+		}
+		return arrayMap
+	} else if m, ok := value.(map[string]interface{}); ok	{
+		for key, val := range m	{
+			m[key] = convertValue(val)
+		}
+		return m
+	} else if js, ok := value.(JsonObject); ok	{
+		return js.dataMap
+	} else if byteData, ok := value.([]byte); ok	{
+		return string(byteData)
+	}
+	return value
+}
+
+func (j *JsonObject) putE(path string, value interface{}) error   {
+	value = convertValue(value)
 
     if j.dataMap == nil  {
         j.dataMap = make(map[string]interface{})

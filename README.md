@@ -1,3 +1,5 @@
+Move to https://github.com/eqto/go-json
+
 # goson
 Java-like json parser for Go.
 
